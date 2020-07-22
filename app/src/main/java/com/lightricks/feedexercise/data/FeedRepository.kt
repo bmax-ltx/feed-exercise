@@ -1,8 +1,6 @@
 package com.lightricks.feedexercise.data
 
-import androidx.lifecycle.LiveData
 import com.lightricks.feedexercise.database.FeedDao
-import com.lightricks.feedexercise.database.ItemEntity
 
 /**
  * This is our data layer abstraction. Users of this class don't need to know

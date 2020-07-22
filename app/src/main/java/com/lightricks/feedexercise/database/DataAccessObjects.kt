@@ -2,10 +2,8 @@ package com.lightricks.feedexercise.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import com.lightricks.feedexercise.network.TemplatesMetadataItem
 import io.reactivex.Completable
 
 
@@ -14,16 +12,16 @@ import io.reactivex.Completable
  */
 @Dao
 interface FeedDao{
-//    @Insert
-//    fun insertList(list: List<ItemEntity>): Completable
-//
-//    @Delete
-//    fun deleteAll(): Completable
-//
-//    @Query("SELECT * FROM feed_table")
-//    fun getAllItems(): LiveData<List<ItemEntity>>
-//
-//    @Query("SELECT * FROM feed_table")
-//    fun getSize(): Int
+    @Insert
+    fun insertList(list: List<Entity>): Completable
+
+    @Query("DELETE FROM feed_table")
+    fun deleteAll(): Completable
+
+    @Query("SELECT * FROM feed_table")
+    fun getAllItems(): LiveData<List<Entity>>
+
+    @Query("SELECT COUNT(*) FROM feed_table")
+    fun getSize(): Int
 
 }
