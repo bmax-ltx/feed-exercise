@@ -1,5 +1,6 @@
 package com.lightricks.feedexercise.ui.feed
 
+import android.app.Application
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -36,7 +37,7 @@ class FeedFragment : Fragment() {
     }
 
     private fun setupViewModel() {
-        viewModel = ViewModelProvider(this, FeedViewModelFactory())
+        viewModel = ViewModelProvider(this, FeedViewModelFactory(requireActivity().application))
             .get(FeedViewModel::class.java)
 
         viewModel.getFeedItems().observe(viewLifecycleOwner, Observer { items ->

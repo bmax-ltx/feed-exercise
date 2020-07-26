@@ -1,22 +1,30 @@
 package com.lightricks.feedexercise.database
 
 import android.content.Context
+import android.os.strictmode.InstanceCountViolation
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
 
-@Database(entities = arrayOf(Entity::class), version = 1)
+@Database(entities = [Entity::class], version = 1)
 abstract class FeedDatabase : RoomDatabase() {
 
     abstract fun feedDao(): FeedDao
 
     companion object {
+        private var INSTANCE: FeedDatabase? = null
+        fun getExistingDatabase(): FeedDatabase{
+            return INSTANCE as FeedDatabase
+        }
         fun getDatabase(context: Context): FeedDatabase {
-            return Room.databaseBuilder(
-                context,
-                FeedDatabase::class.java, "feed_table"
-            ).build()
+            if (INSTANCE == null) {
+                INSTANCE = Room.databaseBuilder(
+                    context,
+                    FeedDatabase::class.java, "feed_table"
+                ).build()
+            }
+            return INSTANCE as FeedDatabase
         }
     }
 

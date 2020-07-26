@@ -39,7 +39,7 @@ class FeedAdapter: RecyclerView.Adapter<FeedItemHolder>() {
     override fun onBindViewHolder(holder: FeedItemHolder, position: Int) {
         val item = items[position]
         Glide.with(holder.binding.feedItemImage)
-            .load(Uri.parse(item.thumbnailUrl))
+            .load(Uri.parse(item.templateThumbnailURI))
             .placeholder(R.drawable.ic_image_placeholder)
             .into(holder.binding.feedItemImage)
     }

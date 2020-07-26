@@ -3,6 +3,7 @@ package com.lightricks.feedexercise.database
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.reactivex.Completable
 
@@ -12,7 +13,7 @@ import io.reactivex.Completable
  */
 @Dao
 interface FeedDao{
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertList(list: List<Entity>): Completable
 
     @Query("DELETE FROM feed_table")

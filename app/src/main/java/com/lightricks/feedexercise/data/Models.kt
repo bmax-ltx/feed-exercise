@@ -7,6 +7,6 @@ package com.lightricks.feedexercise.data
  */
 data class FeedItem(
     val id: String, // Kotlin note: "val" means read-only value.
-    val thumbnailUrl: String,
+    val templateThumbnailURI: String,
     val isPremium: Boolean
 )

@@ -1,5 +1,7 @@
 package com.lightricks.feedexercise.network
 
+import com.lightricks.feedexercise.data.FeedItem
+
 /**
  * todo: add Data Transfer Object data class(es) here
  */
@@ -8,7 +10,7 @@ package com.lightricks.feedexercise.network
 
 
 data class FeedResponse(
-    val templatesMetadata: List<MetadataItem>
+    val templatesMetadata: List<FeedItem>
 )
 
 data class MetadataItem(

@@ -1,5 +1,6 @@
 package com.lightricks.feedexercise.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -10,5 +11,7 @@ import androidx.room.PrimaryKey
 data class Entity(
     @PrimaryKey
     val id: String, // Kotlin note: "val" means read-only value.
-    val thumbnail_url: String?,
-    val is_premium: Boolean?)
+    @ColumnInfo(name = "thumbnail_url")
+    val thumbnailUrl: String?,
+    @ColumnInfo(name = "is_premium")
+    val isPremium: Boolean?)
