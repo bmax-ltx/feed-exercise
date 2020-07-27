@@ -27,7 +27,7 @@ import java.lang.IllegalArgumentException
 open class FeedViewModel(application: Application) : AndroidViewModel(application) {
     private val isLoading = MutableLiveData<Boolean>()
     private val isEmpty = MutableLiveData<Boolean>()
-    private val feedItems = MediatorLiveData<List<FeedItem>>()
+    private var feedItems = MutableLiveData<List<FeedItem>>()//MediatorLiveData<List<FeedItem>>()
     private val networkErrorEvent = MutableLiveData<Event<String>>()
 
     fun getIsLoading(): LiveData<Boolean> = isLoading
@@ -40,8 +40,6 @@ open class FeedViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun refresh() {
-        isLoading.value = true
-        isEmpty.value = true
         loadData()
     }
 
@@ -78,13 +76,15 @@ open class FeedViewModel(application: Application) : AndroidViewModel(applicatio
     @SuppressLint("CheckResult")
     fun handleResponse(json: FeedResponse) {
         val database = FeedDatabase.getDatabase(getApplication())
-        database.feedDao().insertList(jsonToEntity(json))
+        val list = jsonToEntity(json)
+        database.feedDao().insertList(list)
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
             .subscribe({
                 isLoading.postValue(false)
                 isEmpty.postValue(FeedDatabase.getDatabase(getApplication()).feedDao().getSize() <= 0)
                 Log.i("response", "database size " + FeedDatabase.getDatabase(getApplication()).feedDao().getSize())
+                pushToUI()
             })
 
             { throwable ->
@@ -96,14 +96,25 @@ open class FeedViewModel(application: Application) : AndroidViewModel(applicatio
         Log.i("network response", "result ")
     }
 
+    fun pushToUI(){
+        val dbList = FeedDatabase.getDatabase(getApplication()).feedDao().getAllItems()
+        val uiList = ArrayList<FeedItem>()
+        for(db in dbList){
+            uiList.add(FeedItem(db.id, db.thumbnailUrl!!, db.isPremium!!))
+        }
+        feedItems.postValue(uiList)
+    }
+
     fun handleNetworkError(error: Throwable) {
         Log.e("network error", error.message)
     }
 
     private fun jsonToEntity(json: FeedResponse): List<Entity> {
         val ls = ArrayList<Entity>()
+        val thumbnailUrlPrefix =
+            "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"
         for (j in json.templatesMetadata) {
-            val ent = Entity(j.id, j.templateThumbnailURI, j.isPremium)
+            val ent = Entity(j.id, thumbnailUrlPrefix + j.templateThumbnailURI, j.isPremium)
             ls.add(ent)
         }
         return ls

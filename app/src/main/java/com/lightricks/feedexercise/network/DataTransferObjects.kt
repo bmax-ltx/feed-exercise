@@ -10,7 +10,7 @@ import com.lightricks.feedexercise.data.FeedItem
 
 
 data class FeedResponse(
-    val templatesMetadata: List<FeedItem>
+    val templatesMetadata: List<MetadataItem>
 )
 
 data class MetadataItem(
