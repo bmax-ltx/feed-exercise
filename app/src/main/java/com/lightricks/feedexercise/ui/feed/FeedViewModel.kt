@@ -1,20 +1,14 @@
 package com.lightricks.feedexercise.ui.feed
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.*
 import com.lightricks.feedexercise.data.FeedItem
-import com.lightricks.feedexercise.database.Entity
+import com.lightricks.feedexercise.data.FeedRepository
 import com.lightricks.feedexercise.database.FeedDatabase
 import com.lightricks.feedexercise.network.FeedApiService
-import com.lightricks.feedexercise.network.FeedResponse
 import com.lightricks.feedexercise.util.Event
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -27,26 +21,28 @@ import java.lang.IllegalArgumentException
 open class FeedViewModel(application: Application) : AndroidViewModel(application) {
     private val isLoading = MutableLiveData<Boolean>()
     private val isEmpty = MutableLiveData<Boolean>()
-    private var feedItems = MutableLiveData<List<FeedItem>>()//MediatorLiveData<List<FeedItem>>()
+    private var feedItems = MediatorLiveData<List<FeedItem>>()
     private val networkErrorEvent = MutableLiveData<Event<String>>()
-
+    private var feedRepository: FeedRepository
     fun getIsLoading(): LiveData<Boolean> = isLoading
     fun getIsEmpty(): LiveData<Boolean> = isEmpty
     fun getFeedItems(): LiveData<List<FeedItem>> = feedItems
     fun getNetworkErrorEvent(): LiveData<Event<String>> = networkErrorEvent
 
     init {
-        refresh()
+        val feedApiService = initRetrofit()
+        val feedDao = FeedDatabase.getDatabase(this.getApplication()).feedDao()
+        feedRepository = FeedRepository(feedDao, feedApiService)
+        feedItems.addSource(refresh(), )
+
+
     }
 
-    fun refresh() {
-        loadData()
+    fun refresh(): MutableLiveData<List<FeedItem>> {
+        return feedRepository.refresh()
     }
 
-
-    private var compositeDisposable: CompositeDisposable? = null
-
-    private fun loadData() {
+    private fun initRetrofit(): FeedApiService{
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
@@ -57,69 +53,8 @@ open class FeedViewModel(application: Application) : AndroidViewModel(applicatio
             .client(OkHttpClient.Builder().build())
             .build()
             .create(FeedApiService::class.java)
-
-        compositeDisposable = CompositeDisposable()
-        compositeDisposable?.add(
-            requestInterface.getMetadataList()
-                .subscribeOn(Schedulers.io()) //[1]
-                .observeOn(AndroidSchedulers.mainThread()) //[2]
-                .subscribe({ feedResponse ->
-                    handleResponse(feedResponse)
-                }, { error ->
-                    handleNetworkError(error)
-                })
-        )
-
-
+        return requestInterface
     }
-
-    @SuppressLint("CheckResult")
-    fun handleResponse(json: FeedResponse) {
-        val database = FeedDatabase.getDatabase(getApplication())
-        val list = jsonToEntity(json)
-        database.feedDao().insertList(list)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
-            .subscribe({
-                isLoading.postValue(false)
-                isEmpty.postValue(FeedDatabase.getDatabase(getApplication()).feedDao().getSize() <= 0)
-                Log.i("response", "database size " + FeedDatabase.getDatabase(getApplication()).feedDao().getSize())
-                pushToUI()
-            })
-
-            { throwable ->
-                run {
-                    isLoading.postValue(true)
-                    Log.e("Complete", throwable.message)
-                }
-            }
-        Log.i("network response", "result ")
-    }
-
-    fun pushToUI(){
-        val dbList = FeedDatabase.getDatabase(getApplication()).feedDao().getAllItems()
-        val uiList = ArrayList<FeedItem>()
-        for(db in dbList){
-            uiList.add(FeedItem(db.id, db.thumbnailUrl!!, db.isPremium!!))
-        }
-        feedItems.postValue(uiList)
-    }
-
-    fun handleNetworkError(error: Throwable) {
-        Log.e("network error", error.message)
-    }
-
-    private fun jsonToEntity(json: FeedResponse): List<Entity> {
-        val ls = ArrayList<Entity>()
-        val thumbnailUrlPrefix =
-            "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"
-        for (j in json.templatesMetadata) {
-            val ent = Entity(j.id, thumbnailUrlPrefix + j.templateThumbnailURI, j.isPremium)
-            ls.add(ent)
-        }
-        return ls
-    }
-
 }
 
 /**

@@ -20,7 +20,7 @@ interface FeedDao{
     fun deleteAll(): Completable
 
     @Query("SELECT * FROM feed_table")
-    fun getAllItems(): List<Entity>
+    fun getAllItems(): LiveData<List<Entity>>
 
     @Query("SELECT COUNT(*) FROM feed_table")
     fun getSize(): Int

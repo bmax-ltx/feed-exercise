@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
 import com.lightricks.feedexercise.R
+import com.lightricks.feedexercise.application.FeedExercise
 
 
 /**
