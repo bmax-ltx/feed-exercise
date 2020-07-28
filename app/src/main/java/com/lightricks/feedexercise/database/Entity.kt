@@ -12,6 +12,6 @@ data class Entity(
     @PrimaryKey
     val id: String, // Kotlin note: "val" means read-only value.
     @ColumnInfo(name = "thumbnail_url")
-    val thumbnailUrl: String?,
+    val thumbnailUrl: String,
     @ColumnInfo(name = "is_premium")
-    val isPremium: Boolean?)
+    val isPremium: Boolean)
