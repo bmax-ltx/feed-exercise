@@ -12,7 +12,7 @@ import io.reactivex.Completable
  * todo: add Room's Data Access Object interface(s) here
  */
 @Dao
-interface FeedDao{
+interface FeedDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertList(list: List<Entity>): Completable
 

@@ -7,7 +7,7 @@ import retrofit2.http.GET
  * todo: add the FeedApiService interface and the Retrofit and Moshi code here
  */
 
-interface FeedApiService{
+interface FeedApiService {
     @GET("feed.json")
     fun getMetadataList(): Single<FeedResponse>
 }

@@ -13,7 +13,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name="com.lightricks.feedexercise.application.FeedExercise"
         tools:ignore="AllowBackup">
         <activity android:name=".ui.MainActivity">
             <intent-filter>

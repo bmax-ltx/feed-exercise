@@ -27,9 +27,11 @@ class FeedFragment : Fragment() {
     private lateinit var viewModel: FeedViewModel
     private lateinit var feedAdapter: FeedAdapter
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         dataBinding = DataBindingUtil.inflate(inflater, R.layout.feed_fragment, container, false)
         setupViewModel()
         setupViews()

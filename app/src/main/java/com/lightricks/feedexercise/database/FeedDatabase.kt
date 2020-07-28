@@ -1,7 +1,6 @@
 package com.lightricks.feedexercise.database
 
 import android.content.Context
-import android.os.strictmode.InstanceCountViolation
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -14,9 +13,6 @@ abstract class FeedDatabase : RoomDatabase() {
 
     companion object {
         private var INSTANCE: FeedDatabase? = null
-        fun getExistingDatabase(): FeedDatabase{
-            return INSTANCE as FeedDatabase
-        }
         fun getDatabase(context: Context): FeedDatabase {
             if (INSTANCE == null) {
                 INSTANCE = Room.databaseBuilder(

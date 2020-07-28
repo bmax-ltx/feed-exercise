@@ -1,6 +1,7 @@
 package com.lightricks.feedexercise.ui.feed
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
 import com.lightricks.feedexercise.data.FeedItem
 import com.lightricks.feedexercise.data.FeedRepository
@@ -9,6 +10,8 @@ import com.lightricks.feedexercise.network.FeedApiService
 import com.lightricks.feedexercise.util.Event
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.reactivex.functions.Consumer
+import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -20,29 +23,40 @@ import java.lang.IllegalArgumentException
  */
 open class FeedViewModel(application: Application) : AndroidViewModel(application) {
     private val isLoading = MutableLiveData<Boolean>()
-    private val isEmpty = MutableLiveData<Boolean>()
-    private var feedItems = MediatorLiveData<List<FeedItem>>()
+    private val isEmpty: MediatorLiveData<Boolean>
+
+    //    private val feedItems = MediatorLiveData<List<FeedItem>>()
     private val networkErrorEvent = MutableLiveData<Event<String>>()
     private var feedRepository: FeedRepository
     fun getIsLoading(): LiveData<Boolean> = isLoading
     fun getIsEmpty(): LiveData<Boolean> = isEmpty
-    fun getFeedItems(): LiveData<List<FeedItem>> = feedItems
+    fun getFeedItems(): LiveData<List<FeedItem>> = feedRepository.getLiveData()
     fun getNetworkErrorEvent(): LiveData<Event<String>> = networkErrorEvent
 
     init {
         val feedApiService = initRetrofit()
         val feedDao = FeedDatabase.getDatabase(this.getApplication()).feedDao()
         feedRepository = FeedRepository(feedDao, feedApiService)
-        feedItems.addSource(refresh(), )
-
-
+        isEmpty = MediatorLiveData<Boolean>().apply {
+            this.addSource(getFeedItems()) {
+                this.postValue(it.isEmpty())
+            }
+        }
     }
 
-    fun refresh(): MutableLiveData<List<FeedItem>> {
-        return feedRepository.refresh()
+
+    fun refresh() {
+        isLoading.postValue(true)
+        val completable = feedRepository.refresh()
+            .observeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                { isLoading.postValue(false) },
+                { networkErrorEvent.postValue(Event<String>(it.message!!)) }
+            )
     }
 
-    private fun initRetrofit(): FeedApiService{
+    private fun initRetrofit(): FeedApiService {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()

@@ -7,8 +7,6 @@ import com.lightricks.feedexercise.data.FeedItem
  */
 
 
-
-
 data class FeedResponse(
     val templatesMetadata: List<MetadataItem>
 )

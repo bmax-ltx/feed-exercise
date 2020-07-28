@@ -1,12 +1,9 @@
 package com.lightricks.feedexercise.ui
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
 import com.lightricks.feedexercise.R
-import com.lightricks.feedexercise.application.FeedExercise
 
 
 /**
@@ -19,14 +16,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-//        @Suppress("DEPRECATION")
-//        ViewModelProviders.of(this, FeedViewModelFactory()).get(FeedViewModel::class.java)
-
     }
 
     override fun onDestroy() {
         super.onDestroy()
-//        compositeDisposable?.clear()
     }
 
 
