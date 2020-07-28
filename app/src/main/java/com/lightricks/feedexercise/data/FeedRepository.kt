@@ -12,9 +12,6 @@ import com.lightricks.feedexercise.database.FeedDao
 import com.lightricks.feedexercise.network.FeedApiService
 import com.lightricks.feedexercise.network.FeedResponse
 import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 
 /**
  * This is our data layer abstraction. Users of this class don't need to know
