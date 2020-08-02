@@ -29,7 +29,7 @@ class FeedRepositoryTest {
     private lateinit var feedRepository: FeedRepository
     private lateinit var feedDao: FeedDao
     private lateinit var db: FeedDatabase
-
+    private val testSetSize = 10
     @Before
     fun setup() {
         val mockFeedApiService =
@@ -48,7 +48,7 @@ class FeedRepositoryTest {
         val observe = feedRepository.refresh().test()
         observe.awaitTerminalEvent()
         observe.assertComplete()
-        assertTrue(feedDao.getSize() == 10)
+        assertTrue(feedDao.getSize() == testSetSize)
     }
 
     @Test
@@ -59,6 +59,17 @@ class FeedRepositoryTest {
         val res = feedDao.getAllItems().blockingObserve()
         assertTrue(res!![0].id == "01E18PGE1RYB3R9YF9HRXQ0ZSD")
     }
+
+
+    @Test
+    fun testFeedRepository(){
+        val observe = feedRepository.refresh().test()
+        observe.awaitTerminalEvent()
+        observe.assertComplete()
+        val feedItems = feedRepository.getLiveData().blockingObserve()
+        assertTrue(feedItems!!.size == testSetSize)
+    }
+
 
     @After
     fun cleanup() {
