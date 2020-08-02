@@ -23,5 +23,4 @@ abstract class FeedDatabase : RoomDatabase() {
             return INSTANCE as FeedDatabase
         }
     }
-
 }

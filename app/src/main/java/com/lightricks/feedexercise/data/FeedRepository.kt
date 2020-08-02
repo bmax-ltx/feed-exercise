@@ -1,11 +1,7 @@
 package com.lightricks.feedexercise.data
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import com.lightricks.feedexercise.database.Entity
 import com.lightricks.feedexercise.database.FeedDao
@@ -28,13 +24,13 @@ class FeedRepository(private val feedDao: FeedDao, private val feedApiService: F
 
     fun List<Entity>.toFeedItems(): List<FeedItem> {
         return map {
-            FeedItem(it.id, it.thumbnailUrl!!, it.isPremium!!)
+            FeedItem(it.id, it.thumbnailUrl, it.isPremium)
         }
     }
 
     @SuppressLint("CheckResult")
     fun refresh(): Completable {
-        val result = feedApiService.getMetadataList()
+        val result = feedApiService.getFeed()
         return result.flatMapCompletable {
             val list = jsonToEntity(it)
             feedDao.insertList(list)

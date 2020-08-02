@@ -1,15 +1,70 @@
 package com.lightricks.feedexercise.data
 
+import android.content.Context
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.lightricks.feedexercise.database.FeedDao
+import com.lightricks.feedexercise.database.FeedDatabase
+import com.lightricks.feedexercise.network.MockFeedApiService
+import junit.framework.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class FeedRepositoryTest {
-   //todo: add the tests here
+
+    //execute each task synchronously using Architecture Components
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
+
+    private lateinit var feedRepository: FeedRepository
+    private lateinit var feedDao: FeedDao
+    private lateinit var db: FeedDatabase
+
+    @Before
+    fun setup() {
+        val mockFeedApiService =
+            MockFeedApiService(ApplicationProvider.getApplicationContext<Context>())
+        db = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext<Context>()
+            , FeedDatabase::class.java
+        ).build()
+
+        feedDao = db.feedDao()
+        feedRepository = FeedRepository(feedDao, mockFeedApiService)
+    }
+
+    @Test
+    fun testSize() {
+        val observe = feedRepository.refresh().test()
+        observe.awaitTerminalEvent()
+        observe.assertComplete()
+        assertTrue(feedDao.getSize() == 10)
+    }
+
+    @Test
+    fun testName() {
+        val observe = feedRepository.refresh().test()
+        observe.awaitTerminalEvent()
+        observe.assertComplete()
+        val res = feedDao.getAllItems().blockingObserve()
+        assertTrue(res!![0].id == "01E18PGE1RYB3R9YF9HRXQ0ZSD")
+    }
+
+    @After
+    fun cleanup() {
+        db.close()
+    }
+
 }
 
 private fun <T> LiveData<T>.blockingObserve(): T? {
