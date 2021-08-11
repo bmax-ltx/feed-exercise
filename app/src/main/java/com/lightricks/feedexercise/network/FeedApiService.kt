@@ -21,7 +21,7 @@ interface FeedApiService {
 object FeedApi {
     private val moshi : Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     private val retrofit : Retrofit = Retrofit.Builder()
-        .baseUrl("https://assets.swishvideoapp.com/") // TODO last / needed?
+        .baseUrl("https://assets.swishvideoapp.com/")
         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()

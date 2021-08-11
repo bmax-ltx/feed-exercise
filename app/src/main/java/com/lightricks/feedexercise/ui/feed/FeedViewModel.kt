@@ -13,6 +13,10 @@ import io.reactivex.schedulers.Schedulers
 import java.lang.Error
 import java.lang.IllegalArgumentException
 
+
+private const val BASE_URL: String =
+    "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"
+
 /**
  * This view model manages the data for [FeedFragment].
  */
@@ -32,8 +36,7 @@ open class FeedViewModel : ViewModel() {
     }
 
     fun refresh() {
-        //todo: fix the implementation
-        isLoading.value = false
+        isLoading.value = true
         isEmpty.value = true
         loadFeedItems()
     }
@@ -41,29 +44,40 @@ open class FeedViewModel : ViewModel() {
     @SuppressLint("CheckResult")
     fun loadFeedItems() {
         FeedApi.service.getFeed()
-            .subscribeOn(Schedulers.io()) //[1]
-            .observeOn(AndroidSchedulers.mainThread()) //[2]
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ feedResponse ->
                 handleResponse(feedResponse)
-            },{ error ->
+            }, { error ->
                 handleNetworkError(error)
             })
     }
 
-    private fun handleResponse(feedResponse: GetFeedResponse){
+    private fun handleResponse(feedResponse: GetFeedResponse) {
         val output: MutableList<FeedItem> = emptyList<FeedItem>().toMutableList()
-        for (item in feedResponse.templatesMetadata){
+        for (item in feedResponse.templatesMetadata) {
             output.add(templatesMetadataToFeedItem(item))
         }
         feedItems.value = output
+        if (output.size > 0) {
+            isEmpty.value = false
+            isLoading.value = false
+        }
     }
 
-    private fun templatesMetadataToFeedItem(templatesMetadataItem: TemplatesMetadataItem): FeedItem{
-        return FeedItem(templatesMetadataItem.id, "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"+templatesMetadataItem.templateThumbnailURI, templatesMetadataItem.isPremium)
+    /**
+     * Convert templatesMetadataItem to FeedItem
+     */
+    private fun templatesMetadataToFeedItem(templatesMetadataItem: TemplatesMetadataItem): FeedItem {
+        return FeedItem(
+            templatesMetadataItem.id,
+            BASE_URL + templatesMetadataItem.templateThumbnailURI,
+            templatesMetadataItem.isPremium
+        )
     }
 
-    private fun handleNetworkError(error: Throwable) { // TODO right error?
-        Log.d("FeedModelView", "network error") // TODO handle
+    private fun handleNetworkError(error: Throwable) {
+        networkErrorEvent.value = Event(error.message ?: "oops!")
     }
 }
 

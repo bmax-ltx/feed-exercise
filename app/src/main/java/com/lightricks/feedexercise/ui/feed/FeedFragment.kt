@@ -48,6 +48,7 @@ class FeedFragment : Fragment() {
             // only if there result of getContentIfNotHandled() is not null.
             event.getContentIfNotHandled()?.let { showNetworkError() }
         })
+
     }
 
     private fun setupViews() {
