@@ -1,8 +1,16 @@
 package com.lightricks.feedexercise.ui.feed
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.lifecycle.*
 import com.lightricks.feedexercise.data.FeedItem
+import com.lightricks.feedexercise.network.FeedApi
+import com.lightricks.feedexercise.network.GetFeedResponse
+import com.lightricks.feedexercise.network.TemplatesMetadataItem
 import com.lightricks.feedexercise.util.Event
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.lang.Error
 import java.lang.IllegalArgumentException
 
 /**
@@ -27,6 +35,35 @@ open class FeedViewModel : ViewModel() {
         //todo: fix the implementation
         isLoading.value = false
         isEmpty.value = true
+        loadFeedItems()
+    }
+
+    @SuppressLint("CheckResult")
+    fun loadFeedItems() {
+        FeedApi.service.getFeed()
+            .subscribeOn(Schedulers.io()) //[1]
+            .observeOn(AndroidSchedulers.mainThread()) //[2]
+            .subscribe({ feedResponse ->
+                handleResponse(feedResponse)
+            },{ error ->
+                handleNetworkError(error)
+            })
+    }
+
+    private fun handleResponse(feedResponse: GetFeedResponse){
+        val output: MutableList<FeedItem> = emptyList<FeedItem>().toMutableList()
+        for (item in feedResponse.templatesMetadata){
+            output.add(templatesMetadataToFeedItem(item))
+        }
+        feedItems.value = output
+    }
+
+    private fun templatesMetadataToFeedItem(templatesMetadataItem: TemplatesMetadataItem): FeedItem{
+        return FeedItem(templatesMetadataItem.id, "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"+templatesMetadataItem.templateThumbnailURI, templatesMetadataItem.isPremium)
+    }
+
+    private fun handleNetworkError(error: Throwable) { // TODO right error?
+        Log.d("FeedModelView", "network error") // TODO handle
     }
 }
 
