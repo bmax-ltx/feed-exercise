@@ -1,7 +1,6 @@
 package com.lightricks.feedexercise.ui.feed
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.*
 import com.lightricks.feedexercise.data.FeedItem
 import com.lightricks.feedexercise.network.FeedApi
@@ -10,7 +9,6 @@ import com.lightricks.feedexercise.network.TemplatesMetadataItem
 import com.lightricks.feedexercise.util.Event
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.lang.Error
 import java.lang.IllegalArgumentException
 
 
@@ -54,12 +52,13 @@ open class FeedViewModel : ViewModel() {
     }
 
     private fun handleResponse(feedResponse: GetFeedResponse) {
-        val output: MutableList<FeedItem> = emptyList<FeedItem>().toMutableList()
+        val items: MutableList<FeedItem> = emptyList<FeedItem>().toMutableList()
         for (item in feedResponse.templatesMetadata) {
-            output.add(templatesMetadataToFeedItem(item))
+            items.add(templatesMetadataToFeedItem(item))
         }
-        feedItems.value = output
-        if (output.size > 0) {
+        saveItemsToDB(items)
+        feedItems.value = items
+        if (items.size > 0) {
             isEmpty.value = false
             isLoading.value = false
         }
@@ -74,6 +73,10 @@ open class FeedViewModel : ViewModel() {
             BASE_URL + templatesMetadataItem.templateThumbnailURI,
             templatesMetadataItem.isPremium
         )
+    }
+
+    private fun saveItemsToDB(items: MutableList<FeedItem>) {
+
     }
 
     private fun handleNetworkError(error: Throwable) {
