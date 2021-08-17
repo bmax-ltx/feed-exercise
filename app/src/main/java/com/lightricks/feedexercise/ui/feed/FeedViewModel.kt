@@ -10,9 +10,6 @@ import io.reactivex.schedulers.Schedulers
 import java.lang.IllegalArgumentException
 
 
-private const val BASE_URL: String =
-    "https://assets.swishvideoapp.com/Android/demo/catalog/thumbnails/"
-
 /**
  * This view model manages the data for [FeedFragment].
  */

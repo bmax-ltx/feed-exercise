@@ -1,20 +1,17 @@
 package com.lightricks.feedexercise.network
 
-import androidx.lifecycle.LiveData
-import com.lightricks.feedexercise.data.FeedItem
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
+const val feedPath: String = "Android/demo/feed.json"
 
 interface FeedApiService {
-    @GET("Android/demo/feed.json" ) // TODO constant
+    @GET(feedPath)
     fun getFeed() : Single<GetFeedResponse>
 }
 

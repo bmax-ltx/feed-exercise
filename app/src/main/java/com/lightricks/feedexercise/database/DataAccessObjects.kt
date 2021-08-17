@@ -2,7 +2,6 @@ package com.lightricks.feedexercise.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.lightricks.feedexercise.data.FeedItem
 import io.reactivex.Completable
 
 @Dao
