@@ -2,15 +2,13 @@ package com.lightricks.feedexercise.data
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.lightricks.feedexercise.database.FeedDatabase
 import com.lightricks.feedexercise.database.FeedItemEntity
 import com.lightricks.feedexercise.network.FeedApi
 import com.lightricks.feedexercise.network.GetFeedResponse
 import com.lightricks.feedexercise.network.TemplatesMetadataItem
 import io.reactivex.Completable
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 
@@ -25,7 +23,11 @@ class FeedRepository(
     private val feedApiService: FeedApi,
     private val feedDatabase: FeedDatabase
 ) {
-    private val feedItems = MutableLiveData<List<FeedItem>>()
+
+    private val feedItems: LiveData<List<FeedItem>> =
+        Transformations.map(feedDatabase.FeedItemDao().getAll()) {
+            it.toFeedItems()
+        }
 
     fun getFeedItems(): LiveData<List<FeedItem>> = feedItems
 
@@ -38,43 +40,34 @@ class FeedRepository(
             }
     }
 
-    fun handleResponse(feedResponse: GetFeedResponse): Completable {
-        val feedItemList: MutableList<FeedItem> = emptyList<FeedItem>().toMutableList()
+    private fun handleResponse(feedResponse: GetFeedResponse): Completable {
         val feedItemEntityList: MutableList<FeedItemEntity> =
             emptyList<FeedItemEntity>().toMutableList()
         for (item in feedResponse.templatesMetadata) {
-            feedItemList.add(templatesMetadataToFeedItem(item))
-            feedItemEntityList.add(templatesMetadataToFeedItemEntity(item))
+            feedItemEntityList.add(toFeedItemEntity(item))
         }
-
-        feedItems.value = feedItemList//not io
         return saveItemsToDB(feedItemEntityList)// io
-    }
-
-    /**
-     * Convert templatesMetadataItem to FeedItem
-     */
-    private fun templatesMetadataToFeedItem(templatesMetadataItem: TemplatesMetadataItem): FeedItem {
-        return FeedItem(
-            templatesMetadataItem.id,
-            BASE_URL + templatesMetadataItem.templateThumbnailURI,
-            templatesMetadataItem.isPremium
-        )
     }
 
     /**
      * Convert templatesMetadataItem to FeedItemEntity
      */
-    private fun templatesMetadataToFeedItemEntity(templatesMetadataItem: TemplatesMetadataItem): FeedItemEntity {
+    private fun toFeedItemEntity(templatesMetadataItem: TemplatesMetadataItem): FeedItemEntity {
         return FeedItemEntity(
             templatesMetadataItem.id,
             templatesMetadataItem.templateThumbnailURI,
             templatesMetadataItem.isPremium
-        ) // TODO db saves relative URI (just as appears in JSON)
+        )
     }
 
     private fun saveItemsToDB(items: MutableList<FeedItemEntity>): Completable {
-        val c: Completable = feedDatabase.FeedItemDao().insertAll(items)
-        return c
+        return feedDatabase.FeedItemDao().insertAll(items)
+    }
+
+
+    private fun List<FeedItemEntity>.toFeedItems(): List<FeedItem> {
+        return map {
+            FeedItem(it.id, BASE_URL + it.thumbnailUrl, it.isPremium)
+        }
     }
 }
